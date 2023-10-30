@@ -23,14 +23,18 @@ func main() {
 			http.Error(w, "can't read body", http.StatusBadRequest)
 			return
 		}
-		var event v1.Event
-		err = json.Unmarshal(body, &event)
+		var events v1.EventList
+		err = json.Unmarshal(body, &events)
 		if err != nil {
 			http.Error(w, "failed to unmarshal audit events", http.StatusBadRequest)
 			return
 		}
 
-		log.Printf("####### %s %s %s %s #######\n", event.Kind, event.Verb, event.ObjectRef.Resource, event.Stage)
+		for _, event := range events.Items {
+			if event.ObjectRef != nil {
+				log.Printf("##### %s --- %s --- %s\n", event.ObjectRef.Namespace, event.ObjectRef.Resource, event.Verb)
+			}
+		}
 
 	})
 	log.Println("Starting server at :3000")

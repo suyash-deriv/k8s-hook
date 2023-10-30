@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-hook
+spec:
+  selector:
+    matchLabels:
+      app: k8s-hook
+  template:
+    metadata:
+      labels:
+        app: k8s-hook
+    spec:
+      containers:
+      - name: myapp
+        image: docker.io/suyashderiv/k8s-hook
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000
+      imagePullSecrets:
+        - name: my-registry-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-hook
+spec:
+  selector:
+    app: k8s-hook
+  ports:
+  - port: 3000
+    targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-hook
+  labels:
+    name: k8s-hook
+spec:
+  rules:
+  - host: k8s-hook.localhost
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: k8s-hook
+            port: 
+              number: 3000
+
+
